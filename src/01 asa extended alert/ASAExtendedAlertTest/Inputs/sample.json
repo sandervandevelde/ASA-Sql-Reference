@@ -25,6 +25,8 @@
     { "time": "2021-08-20T20:48:45", "temp": 78, "pressure": 705, "deviceId": "sensor-001" },
     { "time": "2021-08-20T20:48:46", "temp": 86, "pressure": 1005, "deviceId": "sensor-002" },
     { "time": "2021-08-20T20:48:50", "temp": 78, "pressure": 1005, "deviceId": "sensor-001" },
-    { "time": "2021-08-20T20:48:55", "temp": 78, "pressure": 1005, "deviceId": "sensor-001" },
-    { "time": "2021-08-20T20:48:56", "temp": 70, "pressure": 1005, "deviceId": "sensor-002" }
+    { "time": "2021-08-20T21:48:46", "temp": 86, "pressure": 1005, "deviceId": "sensor-002" },
+    { "time": "2021-08-20T22:48:47", "temp": 86, "pressure": 1005, "deviceId": "sensor-002" },
+    { "time": "2021-08-20T22:48:55", "temp": 78, "pressure": 1005, "deviceId": "sensor-001" },
+    { "time": "2021-08-20T22:48:56", "temp": 70, "pressure": 1005, "deviceId": "sensor-002" }
 ]

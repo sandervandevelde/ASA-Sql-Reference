@@ -12,7 +12,7 @@ WITH IoTTelemetry AS (
 		deviceId, 
 		System.timestamp() as time,
     	MAX(temp) as temp,
-        MAX(pressure) as pressure
+        MIN(pressure) as pressure
 	FROM
         LocalInput TIMESTAMP BY time
         --LocalTelemetry TIMESTAMP BY time
@@ -128,7 +128,7 @@ AlertEvents as (
     FROM
         DeviceTelemetryFinal 
     WHERE
-        hasTempAlert = 1 AND previousTempAlert = 1 and tempAlertDuration >= 15 and previousTempAlertDuration < 15 -- Escalate if alert is up for more than 15 seconds but for only for one situation
+        hasTempAlert = 1 AND previousTempAlert = 1 and tempAlertDuration >= 60 and previousTempAlertDuration < 60 -- Escalate if alert is up for more than 15 seconds but for only for one situation
 
 	UNION
 
@@ -142,7 +142,7 @@ AlertEvents as (
     FROM
         DeviceTelemetryFinal 
     WHERE
-        hasTempAlert = 1 AND previousTempAlert = 1 and tempAlertDuration >= 25 and previousTempAlertDuration < 25 -- Escalate follow up if alert is up for more than 25 seconds but for only for one situation
+        hasTempAlert = 1 AND previousTempAlert = 1 and tempAlertDuration >= 120 and previousTempAlertDuration < 120 -- Escalate follow up if alert is up for more than 25 seconds but for only for one situation
 
 	Union
 
@@ -213,4 +213,10 @@ SELECT
 FROM 
     AlertEvents A
 
-SELECT * into diagoutput FROM DeviceTelemetryFinal
+SELECT 
+    * 
+INTO 
+    diagoutput 
+FROM 
+    DeviceTelemetryFinal
+
