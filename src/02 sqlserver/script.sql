@@ -1,5 +1,4 @@
-DROP TABLE dbo.DeviceAlerts
-
+-- step 1/2
 
 CREATE TABLE DeviceAlerts (
     DeviceId nvarchar(255),
@@ -37,6 +36,8 @@ VALUES ('sensor-002', 'ClientC', 'C.C@company.com', 1);
 
 select DeviceId, ClientId, EmailAddress, IsEnabled from dbo.DeviceAlerts where IsEnabled = 1 
 
+
+-- STEP 2/2
 
 INSERT INTO DeviceAlerts (DeviceId, ClientId, EmailAddress, IsEnabled)
 VALUES ('sensor-001', 'ClientE', 'C.E@company.com', 1);

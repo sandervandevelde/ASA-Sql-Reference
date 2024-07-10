@@ -16,6 +16,22 @@ To install and use Azure CLI, check this [documentation](https://learn.microsoft
 az group create --name sql-reference-test-rg --location westeurope
 ```
 
+## Create a storage account
+
+### Create a storage account
+
+```
+az storage account create --name sqlreferenceteststor --resource-group sql-reference-test-rg -l westeurope --sku Standard_LRS --kind StorageV2
+```
+
+### Get the storage account connection string
+
+```
+az storage account show-connection-string --name sqlreferenceteststor --resource-group sql-reference-test-rg
+```
+
+*Note*: This storage account connectionstring is needed by the stream analytics job for storing reference data.
+
 ## Create an iothub
 
 ### Create an iothub
@@ -54,44 +70,6 @@ az iot hub device-identity connection-string show --device-id testdevice --hub-n
 
 *Note*: This device connection string is needed by the IoT Hub client to connect.
 
-## Create an eventhub namespace with eventhub
-
-### Create an eventhub namespace
-
-```
-az eventhubs namespace create --name sql-reference-test-ehns --resource-group sql-reference-test-rg -l westeurope --sku Standard
-```
-
-### get the RootManageSharedAccessKey of the eventhub namespace
-
-```
-az eventhubs namespace authorization-rule keys list --resource-group sql-reference-test-rg --namespace-name sql-reference-test-ehns --authorization-rule-name  RootManageSharedAccessKey
-```
-
-*Note*: This eventhub namespace key is needed by the stream analytics job eventhub output to connect.
-
-### Create an eventhub 
-
-```
-az eventhubs eventhub create --name alerteh --resource-group sql-reference-test-rg --namespace-name sql-reference-test-ehns --partition-count 4
-```
-
-## Create a storage account
-
-### Create a storage account
-
-```
-az storage account create --name sqlreferenceteststor --resource-group sql-reference-test-rg -l westeurope --sku Standard_LRS --kind StorageV2
-```
-
-### Get the storage account connection string
-
-```
-az storage account show-connection-string --name sqlreferenceteststor --resource-group sql-reference-test-rg
-```
-
-*Note*: This storage account connectionstring is needed by the stream analytics job for storing reference data.
-
 ## Create SQL Server and SQL database (plus firewall rules) 
 
 ### Create SQL Server
@@ -100,7 +78,7 @@ az storage account show-connection-string --name sqlreferenceteststor --resource
 az sql server create --name sql-reference-test-srvr --resource-group sql-reference-test-rg --location northeurope --admin-user adminsql --admin-password demosecret
 ```
 
-*Note*: PRovide your own name and password. These are needed by the stream analytics job reference input to connect.
+*Note*: Provide your own name and password. The complexity of the password will be checked upfront. These are needed by the stream analytics job reference input to connect.
 
 ### Create sql server firewall for azure resources having access (needed for Stream Analytics)
 
@@ -124,10 +102,48 @@ $ip
 ### Creating a SQL database within SQL server
 
 ```
-az sql db create --resource-group sql-reference-test-rg --server sql-reference-test-srvr --name referencedb --edition GeneralPurpose --family Gen5 --capacity 2 --zone-redundant false --free-limit-exhaustion-behavior AutoPause --free-limit true
+az sql db create --resource-group sql-reference-test-rg --server sql-reference-test-srvr --name referencedb --edition GeneralPurpose --family Gen5 --capacity 2 --zone-redundant false --free-limit-exhaustion-behavior AutoPause --free-limit false
 ```
 
-*Note*: Here, I try to create a free database. You can create maximum one free SQL database per subscription. Fill in 'false' at the end for a paid database.
+*Note*: Here, I try to create a paid database. Technically, a free database should work too. You can create maximum one free SQL database per subscription. Fill in 'true' at the end for a free database (if applicable).
+
+### Create the table and load the sample records
+
+In the Azure portal, navigate to the 'Query editor (preview)' tab in the 'referencedb' resource.
+
+Login using the name and password seen above.
+
+Check the file 'script.sql' in the folder '02 sqlserver' for the first commands and inserts.
+
+Execute only step 1/2:
+
+- Create the table
+- Add 7 rows
+- Run the test query returning only 4 rows
+
+## Create an eventhub namespace with eventhub
+
+### Create an eventhub namespace
+
+```
+az eventhubs namespace create --name sql-reference-test-ehns --resource-group sql-reference-test-rg -l westeurope --sku Standard
+```
+
+### get the RootManageSharedAccessKey of the eventhub namespace
+
+```
+az eventhubs namespace authorization-rule keys list --resource-group sql-reference-test-rg --namespace-name sql-reference-test-ehns --authorization-rule-name  RootManageSharedAccessKey
+```
+
+*Note*: This eventhub namespace key is needed by the stream analytics job eventhub output to connect.
+
+### Create an eventhub 
+
+```
+az eventhubs eventhub create --name alerteh --resource-group sql-reference-test-rg --namespace-name sql-reference-test-ehns --partition-count 4
+```
+
+*Note*: The same amount of partitions is filled in as in the IoT Hub to prevent 'funneling'.
 
 ## Create a stream analytics job
 
@@ -160,10 +176,18 @@ az stream-analytics input create --job-name sql-reference-test-asa --resource-gr
 ## Create a 'eventhuboput'
 
 ```
-az stream-analytics output create --job-name sql-reference-test-asa --resource-group sql-reference-test-rg --output-name eventhuboput --datasource '{"type":"Microsoft.ServiceBus/EventHub", "properties": { "authenticationMode": "ConnectionString","eventHubName": "alerteh", "serviceBusNamespace": "sql-reference-test-ehns", "sharedAccessPolicyKey": "key=", "sharedAccessPolicyName": "RootManageSharedAccessKey" } }' --serialization '{"type":"Json","properties":{"format":"LineSeparated","encoding":"UTF8"}}'
+az stream-analytics output create --job-name sql-reference-test-asa --resource-group sql-reference-test-rg --output-name eventhuboput --datasource '{"type":"Microsoft.ServiceBus/EventHub", "properties": { "authenticationMode": "ConnectionString","eventHubName": "alerteh", "serviceBusNamespace": "sql-reference-test-ehns", "sharedAccessPolicyKey": "primarykey=", "sharedAccessPolicyName": "RootManageSharedAccessKey" } }' --serialization '{"type":"Json","properties":{"format":"LineSeparated","encoding":"UTF8"}}'
 ```
 
 *Note*: Fill in event hub namespace secrets.
+
+### Test the two inputs and one output
+
+In the Azure portal, press the 'test' button per input and output to see it the setup is connect. 
+
+This will result in a green checkmark is the setup is correct for an input or output.
+
+Both inputs and the output chould be able to connect. 
 
  ## load the stream analytics job query
 
