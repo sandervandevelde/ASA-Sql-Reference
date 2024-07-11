@@ -1,0 +1,226 @@
+-- *************
+--
+-- Alerting example on IoT telemetry: on flanks and for extended timespans
+--
+-- Reference data is provided via Sql Server database
+--
+-- Inspired by https://blog.sivamuthukumar.com/azure-stream-analytics-alerts-on-iot-telemetry
+--
+-- *************
+
+WITH IoTTelemetry AS (
+	-- Select all rows and columns from the input stream to prevent consumergroup overrun
+	SELECT
+		deviceId, 
+		System.timestamp() as time,
+    	MAX(temp) as temp,
+        MAX(pressure) as pressure
+	FROM
+        iothubinput TIMESTAMP BY time
+	GROUP BY 
+		System.timestamp(), deviceId -- Run immediately on every event
+),
+
+ProcessedTelemetry as (
+	-- Select all rows and columns from the input stream and add selected alerts or not alerts
+    SELECT
+        deviceId, 
+        time,
+        temp,
+		pressure,
+        CASE WHEN temp > 80 THEN 1 ELSE 0 END as hasTempAlert,
+        CASE WHEN pressure < 1000 THEN 1 ELSE 0 END as hasPressureAlert
+    FROM
+		IoTTelemetry
+),
+
+TelemetryAlert as (
+	-- For each alert, add previous alert within one day to the previous query (null if not found)
+    SELECT
+        deviceId, 
+        time,
+        temp,
+		pressure,
+        hasTempAlert,
+		hasPressureAlert,
+        LAG(hasTempAlert) OVER (PARTITION BY deviceId LIMIT DURATION(day, 1)) as previousTempAlert,
+        LAG(hasPressureAlert) OVER (PARTITION BY deviceId LIMIT DURATION(day, 1)) as previousPressureAlert
+    FROM
+	    ProcessedTelemetry        
+),
+
+TelemetryWithDuration as (
+	-- Add calculation of the duration of each alert being up per row to the previous query
+    SELECT
+        deviceId, 
+        time,
+        temp,
+		pressure,
+        hasTempAlert,
+		hasPressureAlert,
+        previousTempAlert,
+		previousPressureAlert,
+        DATEDIFF(second, LAST(time) 
+		            OVER (PARTITION BY deviceId LIMIT DURATION(day, 1) 
+		            WHEN hasTempAlert = 1 AND previousTempAlert = 0), time) as tempAlertDuration,
+		DATEDIFF(second, LAST(time) 
+		            OVER (PARTITION BY deviceId LIMIT DURATION(day, 1) 
+		            WHEN hasPressureAlert = 1 AND previousPressureAlert = 0), time) as pressureAlertDuration
+    FROM
+        TelemetryAlert       
+),
+
+DeviceTelemetryFinal as (
+	-- Add calculation of the duration of the previous alert being up per row to the previous query
+    SELECT
+        deviceId, 
+        time,
+        temp,
+		pressure,
+        hasTempAlert,
+        previousTempAlert,
+        tempAlertDuration,
+        LAG(tempAlertDuration) OVER (PARTITION BY deviceId LIMIT DURATION(day, 1)) as previousTempAlertDuration,
+		hasPressureAlert,
+		previousPressureAlert,
+		pressureAlertDuration,
+        LAG(pressureAlertDuration) OVER (PARTITION BY deviceId LIMIT DURATION(day, 1)) as previousPressureAlertDuration
+
+    FROM
+	    TelemetryWithDuration       
+),
+
+AlertEvents as (
+	-- Union of the different types of events: alertRaised, alertCleared, alertEscalated
+    SELECT 
+        deviceId, 
+        time, 
+		'temp' as 'alertKey',
+        temp as 'alertValue', 
+        hasTempAlert as 'hasAlert',
+        'tempAlertRaised' as eventType
+    FROM
+        DeviceTelemetryFinal 
+    WHERE
+        hasTempAlert = 1 AND (previousTempAlert IS NULL OR previousTempAlert = 0)
+
+    UNION
+
+    SELECT 
+        deviceId, 
+        time, 
+		'temp' as 'alertKey',
+        temp as 'alertValue', 
+        hasTempAlert as 'hasAlert',
+        'tempAlertCleared' as eventType
+    FROM
+        DeviceTelemetryFinal 
+    WHERE
+        hasTempAlert = 0 AND previousTempAlert = 1
+    
+    UNION
+
+    SELECT 
+        deviceId, 
+        time, 
+		'temp' as 'alertKey',
+        temp as 'alertValue', 
+        hasTempAlert as 'hasAlert',
+        'tempAlertEscalated' as eventType
+    FROM
+        DeviceTelemetryFinal 
+    WHERE
+        hasTempAlert = 1 AND previousTempAlert = 1 and tempAlertDuration >= 15 and previousTempAlertDuration < 15 -- Escalate if alert is up for more than 15 seconds but for only for one situation
+
+	UNION
+
+	SELECT 
+        deviceId, 
+        time, 
+		'temp' as 'alertKey',
+        temp as 'alertValue', 
+        hasTempAlert as 'hasAlert',
+        'tempAlertEscalatedTwice' as eventType
+    FROM
+        DeviceTelemetryFinal 
+    WHERE
+        hasTempAlert = 1 AND previousTempAlert = 1 and tempAlertDuration >= 25 and previousTempAlertDuration < 25 -- Escalate follow up if alert is up for more than 25 seconds but for only for one situation
+
+	Union
+
+    SELECT 
+        deviceId, 
+        time, 
+		'pressure' as 'alertKey',
+        pressure as 'alertValue', 
+        hasPressureAlert as 'hasAlert',
+        'pressureAlertRaised' as eventType
+    FROM
+        DeviceTelemetryFinal 
+    WHERE
+        hasPressureAlert = 1 AND (previousPressureAlert IS NULL OR previousPressureAlert = 0)
+
+    UNION
+
+    SELECT 
+        deviceId, 
+        time, 
+		'pressure' as 'alertKey',
+        pressure as 'alertValue', 
+        hasPressureAlert as 'hasAlert',
+        'pressureAlertCleared' as eventType
+    FROM
+        DeviceTelemetryFinal 
+    WHERE
+	hasPressureAlert = 0 AND previousPressureAlert = 1
+    
+    UNION
+
+    SELECT 
+        deviceId, 
+        time, 
+		'pressure' as 'alertKey',
+        pressure as 'alertValue', 
+        hasPressureAlert as 'hasAlert',
+        'pressureAlertEscalated' as eventType
+    FROM
+        DeviceTelemetryFinal 
+    WHERE
+	    hasPressureAlert = 1 AND previousPressureAlert = 1 and pressureAlertDuration >= 15 and previousPressureAlertDuration < 15 -- Escalate if alert is up for more than 15 seconds but for only for one situation
+
+	UNION
+
+	SELECT 
+        deviceId, 
+        time, 
+		'pressure' as 'alertKey',
+        pressure as 'alertValue', 
+        hasPressureAlert as 'hasAlert',
+        'pressureAlertEscalatedTwice' as eventType
+    FROM
+        DeviceTelemetryFinal 
+    WHERE
+        hasPressureAlert = 1 AND previousPressureAlert = 1 and pressureAlertDuration >= 25 and previousPressureAlertDuration < 25 -- Escalate follow up if alert is up for more than 25 seconds but for only for one situation
+)
+
+
+SELECT 
+    A.deviceId, 
+    A.time, 
+    A.alertKey,
+    A.alertValue, 
+    A.hasAlert,
+    A.eventType,
+    R.EmailAddress,
+    R.IsEnabled 
+INTO 
+    eventhuboput 
+FROM 
+    AlertEvents A
+JOIN 
+    sqlreferenceinput R  
+ON 
+    A.deviceId = R.DeviceId
+
+
+--SELECT * into diagoutput FROM DeviceTelemetryFinal

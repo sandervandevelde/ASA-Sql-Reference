@@ -148,7 +148,7 @@ az eventhubs eventhub create --name alerteh --resource-group sql-reference-test-
 ## Create a stream analytics job
 
 ```
-az stream-analytics job create --job-name sql-reference-test-asa --resource-group sql-reference-test-rg --location westeurope --compatibility-level "1.2" --data-locale "en-US" --content-storage-policy JobStorageAccount --job-storage-account authentication-mode=connectionstring account-name=sqlreferenceteststor account-key=key== --transformation name="basictransformation" streaming-units=1 query="Select * from testinput" --output-error-policy "Drop" --out-of-order-policy "Adjust" --order-max-delay 5 --arrival-max-delay 16
+az stream-analytics job create --job-name sql-reference-test-asa --resource-group sql-reference-test-rg --location westeurope --compatibility-level "1.2" --data-locale "en-US" --content-storage-policy JobStorageAccount --job-storage-account authentication-mode=connectionstring account-name=sqlreferenceteststor account-key=key== --transformation name="basictransformation" streaming-units=1 query="Select * into eventhuboutput from iothubinput" --output-error-policy "Drop" --out-of-order-policy "Adjust" --order-max-delay 5 --arrival-max-delay 16
 ```
 
 *Note*: Fill in storage account connectionstring secrets.
@@ -173,10 +173,10 @@ az stream-analytics input create --job-name sql-reference-test-asa --resource-gr
 
 *Note*: This reference data is updated once a minute. This will create new storage account blobs every minutes. Check out the delta snapshot to overcome this.   
 
-## Create a 'eventhuboput'
+## Create a 'eventhuboutput'
 
 ```
-az stream-analytics output create --job-name sql-reference-test-asa --resource-group sql-reference-test-rg --output-name eventhuboput --datasource '{"type":"Microsoft.ServiceBus/EventHub", "properties": { "authenticationMode": "ConnectionString","eventHubName": "alerteh", "serviceBusNamespace": "sql-reference-test-ehns", "sharedAccessPolicyKey": "primarykey=", "sharedAccessPolicyName": "RootManageSharedAccessKey" } }' --serialization '{"type":"Json","properties":{"format":"LineSeparated","encoding":"UTF8"}}'
+az stream-analytics output create --job-name sql-reference-test-asa --resource-group sql-reference-test-rg --output-name eventhuboutput --datasource '{"type":"Microsoft.ServiceBus/EventHub", "properties": { "authenticationMode": "ConnectionString","eventHubName": "alerteh", "serviceBusNamespace": "sql-reference-test-ehns", "sharedAccessPolicyKey": "primarykey=", "sharedAccessPolicyName": "RootManageSharedAccessKey" } }' --serialization '{"type":"Json","properties":{"format":"LineSeparated","encoding":"UTF8"}}'
 ```
 
 *Note*: Fill in event hub namespace secrets.
