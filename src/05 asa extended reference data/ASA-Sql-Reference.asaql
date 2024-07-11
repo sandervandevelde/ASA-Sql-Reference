@@ -203,7 +203,6 @@ AlertEvents as (
         hasPressureAlert = 1 AND previousPressureAlert = 1 and pressureAlertDuration >= 25 and previousPressureAlertDuration < 25 -- Escalate follow up if alert is up for more than 25 seconds but for only for one situation
 )
 
-
 SELECT 
     A.deviceId, 
     A.time, 
@@ -214,13 +213,12 @@ SELECT
     R.EmailAddress,
     R.IsEnabled 
 INTO 
-    eventhuboput 
+    eventhuboutput 
 FROM 
     AlertEvents A
 JOIN 
     sqlreferenceinput R  
 ON 
     A.deviceId = R.DeviceId
-
 
 --SELECT * into diagoutput FROM DeviceTelemetryFinal

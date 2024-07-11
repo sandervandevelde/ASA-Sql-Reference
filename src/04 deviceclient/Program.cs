@@ -19,7 +19,7 @@ namespace AsaTestConsoleApp
 
         private static void SendMessage(DeviceClient deviceClient)
         {
-            var messageBody = new MessageBody { deviceId = "sensor-001", temp = 78, pressure = 1001, time = DateTime.Now }; 
+            var messageBody = new MessageBody { deviceId = "sensor-001", temp = 78, pressure = 1002, time = DateTime.Now }; 
 
             string jsonData = JsonConvert.SerializeObject(messageBody);
 

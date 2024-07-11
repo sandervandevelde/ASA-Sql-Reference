@@ -129,6 +129,10 @@ Execute only step 1/2:
 az eventhubs namespace create --name sql-reference-test-ehns --resource-group sql-reference-test-rg -l westeurope --sku Standard
 ```
 
+This creates a 'Standard' tier eventhub namespace.
+
+*Note*: you need to have a 'Standard' tier eventhub namespace when you need more than one consumer group per event hub. 
+
 ### get the RootManageSharedAccessKey of the eventhub namespace
 
 ```
@@ -191,21 +195,182 @@ This will result in a green checkmark is the setup is correct for an input or ou
 
 Both inputs and the output chould be able to connect. 
 
-### Put on the Stream analytics job
+### Start the Stream analytics job
 
-At this moment a sample job query is added to test the flow from iot hub to event hub with the stream analytics job in between.
+At this moment a sample job query is added to test the flow from iot hub to event hub with the stream analytics job in between. The reference data is not taken into account yet...
 
 We will add the actual query in the last steps.
 
-Please startthe job and see it starts succesfully.
+Navigate in the Azure portal to the stream analytics job.
+
+Navigate to the Query page.
+
+You see the current test job ASQL:
+
+```
+Select * into eventhuboutput from iothubinput
+```
+
+Navigate to the Overview page.
+
+Start the job (starting ingesting messages 'now' is fine). 
+
+See it starts succesfully, the state changes to 'Running'.
+
+### Add an environment variable for the device connection string
+
+We are going to send a device telemetry message using the test application seen in the folder 'deviceclient'.
+
+This application needs the device connection string tom create a secure connection.
+
+Please add the following environment variable on your development machine:
+
+* key: ASADEVICECLIENT
+* value: HostName=sql-reference-test-ih.azure-devices.net;DeviceId=testdevice;SharedAccessKey=KEY=
+
+*Note*: Start the development tool only after this variable is added so it is read by the tooling.
 
 ### Send a telemetry message
 
+To send a device telemetry message, start the test C# device client application seen in the folder 'deviceclient' in Visual Studio.
 
+Run it.
+
+See that the connection string is read.
+
+See that the message is sent.
+
+*Note*: The default message will not lead to an alert state. 
 
 ### See how the telemetry message arrives in the event hub
 
+We test if the default message sent by a device is arring in the eventhub. 
 
+*Note*: you need to have a 'Standard' tier event hub namespace when you need more than one consumer group per event hub. 
+
+Navigate in the Azure portal to the eventhub namespace.
+
+Navigate to the eventhub 'alerteh'.
+
+Select the page 'Process data'.
+
+Start the option 'Enable real time insights from events'.
+
+*Note*: You get a message this viewer create an extra key and consumer group on the event hub.
+
+You should see the telemetry message arrived, by now. Refresh the table using the 'refresh' button if needed.
+
+Send a second telemetry message using the tooling.
+
+This second message will arrive too.
+
+*Note*: the event hub now contains two message which are not directly removed from this page. These JSON format differs from the actual alert messages. Mixing these messages will lead additional caused by the two message formats. This is not a problem. You can switch to the 'raw' visualization to overcome this table behavior.
 
  ## Load the stream analytics job query
+
+We want to update and test the Azure Stream Analytics query with the actual alert job query, taking the reference data into account.
+
+The new job query is made available in the 'asa extended reference data' folder.
+
+### Stop the stream analytics job
+
+Navigate in the Azure portal to the stream analytics job.
+
+Stop the job. 
+
+See it stops succesfully, the state changes to 'Stopped'.
+
+Navigate to the Query page.
+
+You see the current test job ASQL:
+
+```
+Select * into eventhuboutput from iothubinput
+```
+
+replace the job ASQL with the content of the file 'ASA-Sql-Reference.asaql'.
+
+Save the query using 'Save query' button.
+
+Notice you get a green checkbox with the message 'Job ready to start'.
+
+Navigate to the Overview page.
+
+Start the job (starting ingesting messages 'now' is fine). 
+
+See it starts succesfully, the state changes to 'Running'.
+
+### Send telemetry messages to simulate alerts being raised
+
+To send a device telemetry message having an alert situation, start or open the test C# device client application seen in the folder 'deviceclient' in Visual Studio.
+
+*Note*: The default message will not lead to an alert state (the temperature is not high enough and the pressure is not low enough). 
+
+Make a change in the code regarding the 'MessageBody':
+
+* Change the pressure value from 1001 to 901. 
+
+Run it.
+
+See that the message is sent with the new value 901.
+
+Now run it a few time more, repeat the same message multiple times.
+
+### Check the alerts being raised in the eventhub
+
+The expectation we will only see a limit number of messages. Perhaps the message is escalated one or twice but we do not get the same message for the same customer more than once, even if we send a message dozens of times.
+
+Navigate in the Azure portal to the eventhub namespace.
+
+Navigate to the eventhub 'alerteh'.
+
+Select the page 'Process data'.
+
+Start the option 'Enable real time insights from events'.
+
+ Refresh the table using the 'refresh' button if needed.
+
+You should see the arrival of al least two alert messages:
+
+* Each message is bound for a certain customer (see the email addres) and showing the state of the alert: pressureAlertRaised, pressureAlertEscalated, pressureAlertEscalatedTwice.
+* Each alert state is represented by two messages, due to the two email address subscribed to this device.
+
+Notice the number of alerts is just a subset of the number of messages being sent.
+
+### Send telemetry messages to simulate alerts being cleared
+
+Open the test C# device client application seen in the folder 'deviceclient' in Visual Studio.
+
+Undo the change in the code regarding the 'MessageBody':
+
+* Change the pressure value from 901 to 1002. 
+
+Run it.
+
+See that the message is sent with the new value 1002.
+
+Now run it a few time more, repeat the same message (without an alert situation) multiple times.
+
+### Check the alerts being cleared in the eventhub
+
+Navigate in the Azure portal to the eventhub namespace.
+
+Navigate to the eventhub 'alerteh'.
+
+Select the page 'Process data'.
+
+Start the option 'Enable real time insights from events'.
+
+ Refresh the table using the 'refresh' button if needed.
+
+You should see the arrival of two messages of the alert being cleared. Both messages represent an email to a customer requesting an alert.
+
+Notice no more messages are being sent, dispite the number of device messages (without an error situation).
+
+## Change the reference data so device registration changes are picked up
+
+
+
+
+
 
