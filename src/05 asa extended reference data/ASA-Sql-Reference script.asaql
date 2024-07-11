@@ -14,7 +14,7 @@ WITH IoTTelemetry AS (
 		deviceId, 
 		System.timestamp() as time,
     	MAX(temp) as temp,
-        MAX(pressure) as pressure
+        MIN(pressure) as pressure
 	FROM
         iothubinput TIMESTAMP BY time
 	GROUP BY 
@@ -130,7 +130,7 @@ AlertEvents as (
     FROM
         DeviceTelemetryFinal 
     WHERE
-        hasTempAlert = 1 AND previousTempAlert = 1 and tempAlertDuration >= 15 and previousTempAlertDuration < 15 -- Escalate if alert is up for more than 15 seconds but for only for one situation
+        hasTempAlert = 1 AND previousTempAlert = 1 and tempAlertDuration >= 300 and previousTempAlertDuration < 300 -- Escalate if alert is up for more than 15 seconds but for only for one situation
 
 	UNION
 
@@ -144,7 +144,7 @@ AlertEvents as (
     FROM
         DeviceTelemetryFinal 
     WHERE
-        hasTempAlert = 1 AND previousTempAlert = 1 and tempAlertDuration >= 25 and previousTempAlertDuration < 25 -- Escalate follow up if alert is up for more than 25 seconds but for only for one situation
+        hasTempAlert = 1 AND previousTempAlert = 1 and tempAlertDuration >= 600 and previousTempAlertDuration < 600 -- Escalate follow up if alert is up for more than 25 seconds but for only for one situation
 
 	Union
 
@@ -186,7 +186,7 @@ AlertEvents as (
     FROM
         DeviceTelemetryFinal 
     WHERE
-	    hasPressureAlert = 1 AND previousPressureAlert = 1 and pressureAlertDuration >= 15 and previousPressureAlertDuration < 15 -- Escalate if alert is up for more than 15 seconds but for only for one situation
+	    hasPressureAlert = 1 AND previousPressureAlert = 1 and pressureAlertDuration >= 300 and previousPressureAlertDuration < 300 -- Escalate if alert is up for more than 15 seconds but for only for one situation
 
 	UNION
 
@@ -200,7 +200,7 @@ AlertEvents as (
     FROM
         DeviceTelemetryFinal 
     WHERE
-        hasPressureAlert = 1 AND previousPressureAlert = 1 and pressureAlertDuration >= 25 and previousPressureAlertDuration < 25 -- Escalate follow up if alert is up for more than 25 seconds but for only for one situation
+        hasPressureAlert = 1 AND previousPressureAlert = 1 and pressureAlertDuration >= 600 and previousPressureAlertDuration < 600 -- Escalate follow up if alert is up for more than 25 seconds but for only for one situation
 )
 
 SELECT 
