@@ -166,7 +166,7 @@ az stream-analytics job create --job-name sql-reference-test-asa --resource-grou
 
 *Note*: The query just connects the IoT hub input to the Event hub output. This is to test the end to end connection first.
 
-### Create an 'iothubinput' 
+### Create an input named 'iothubinput' 
 
 ```
 az stream-analytics input create --job-name sql-reference-test-asa --resource-group sql-reference-test-rg --input-name iothubinput --properties '{"type":"Stream","datasource":{"type":"Microsoft.Devices/IotHubs","properties":{"consumerGroupName":"asa","endpoint":"messages/events","iotHubNamespace":"sql-reference-test-ih","sharedAccessPolicyKey":"key=","sharedAccessPolicyName":"iothubowner"}},"serialization":{"type":"Json","encoding":"UTF8" } }'
@@ -174,7 +174,7 @@ az stream-analytics input create --job-name sql-reference-test-asa --resource-gr
 
 *Note*: Fill in the IoT hub connection string secrets.
 
-### Create a 'sqlreferenceinput'
+### Create an input named 'sqlreferenceinput'
 
 ```
 az stream-analytics input create --job-name sql-reference-test-asa --resource-group sql-reference-test-rg --input-name sqlreferenceinput --properties '{ "type" : "Reference", "datasource": { "type": "Microsoft.Sql/Server/Database", "properties": { "authenticationMode": "ConnectionString", "database": "referencedb", "deltaSnapshotQuery": "", "fullSnapshotQuery": "SELECT DeviceId, ClientId, EmailAddress, IsEnabled FROM dbo.DeviceAlerts WHERE IsEnabled = 1", "password": "demosecret", "refreshRate": "0:01:00", "refreshType": "RefreshPeriodicallyWithFull", "server": "sql-reference-test-srvr", "user": "adminsql" } }, "serialization": { "type": "Json", "encoding": "UTF8" } }'
@@ -184,13 +184,13 @@ az stream-analytics input create --job-name sql-reference-test-asa --resource-gr
 
 *Note*: This reference data is updated as a full table once a minute. This will create new storage account blobs every single minute. Check out the delta snapshot to overcome this.   
 
-### Create an 'eventhuboutput'
+### Create an output named 'eventhuboutput'
 
 ```
 az stream-analytics output create --job-name sql-reference-test-asa --resource-group sql-reference-test-rg --output-name eventhuboutput --datasource '{"type":"Microsoft.ServiceBus/EventHub", "properties": { "authenticationMode": "ConnectionString","eventHubName": "alerteh", "serviceBusNamespace": "sql-reference-test-ehns", "sharedAccessPolicyKey": "primarykey=", "sharedAccessPolicyName": "RootManageSharedAccessKey" } }' --serialization '{"type":"Json","properties":{"format":"LineSeparated","encoding":"UTF8"}}'
 ```
 
-*Note*: Fill in event hub namespace secrets.
+*Note*: Fill in Event hub namespace secrets.
 
 ## Testing the telemetry message flow end-to-end using a basic Stream Analytics query
 
@@ -206,7 +206,7 @@ Both inputs and the output should be able to connect.
 
 ### Start the Stream Analytics job
 
-At this moment a sample job query is added to test the flow from an IoT hub to event hub with the stream analytics job in between. The reference data is not taken into account yet...
+At this moment a sample job query is added to test the flow from an IoT hub to an Event hub with the stream analytics job in between. The reference data is not taken into account yet...
 
 We will add the actual query in the last steps.
 
@@ -251,11 +251,11 @@ See that the message is sent.
 
 *Note*: The default message will not lead to an alert state. 
 
-### See how the telemetry message arrives in the event hub
+### See how the telemetry message arrives in the Event hub
 
 We test if the default message sent by a device is arring in the Event hub. 
 
-*Note*: you need to have a 'Standard' tier event hub namespace when you need more than one consumer group per event hub. 
+*Note*: you need to have a 'Standard' tier Event hub namespace when you need more than one consumer group per Event hub. 
 
 Navigate in the Azure portal to the Event hub namespace.
 
@@ -265,7 +265,7 @@ Select the page 'Process data'.
 
 Start the option 'Enable real time insights from events'.
 
-*Note*: You get a message this viewer create an extra key and consumer group on the event hub.
+*Note*: You get a message this viewer create an extra key and consumer group on the Event hub.
 
 You should see the telemetry message arrived, by now. Refresh the table using the 'refresh' button if needed.
 
@@ -273,7 +273,7 @@ Send a second telemetry message using the tooling.
 
 This second message will arrive too.
 
-*Note*: the event hub now contains two message which are not directly removed from this page. These JSON format differs from the actual alert messages. Mixing these messages will lead additional caused by the two message formats. This is not a problem. You can switch to the 'raw' visualization to overcome this table behavior.
+*Note*: the Event hub now contains two message which are not directly removed from this page. These JSON format differs from the actual alert messages. Mixing these messages will lead additional caused by the two message formats. This is not a problem. You can switch to the 'raw' visualization to overcome this table behavior.
 
  ## Load the stream analytics job query
 
