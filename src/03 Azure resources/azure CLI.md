@@ -182,9 +182,9 @@ az stream-analytics input create --job-name sql-reference-test-asa --resource-gr
 
 *Note*: Fill in the SQL server database secrets.
 
-*Note*: This reference data is updated once a minute as a full table. This will create new storage account blobs every single minute. Check out the delta snapshot to overcome this.   
+*Note*: This reference data is updated as a full table once a minute. This will create new storage account blobs every single minute. Check out the delta snapshot to overcome this.   
 
-### Create a 'eventhuboutput'
+### Create an 'eventhuboutput'
 
 ```
 az stream-analytics output create --job-name sql-reference-test-asa --resource-group sql-reference-test-rg --output-name eventhuboutput --datasource '{"type":"Microsoft.ServiceBus/EventHub", "properties": { "authenticationMode": "ConnectionString","eventHubName": "alerteh", "serviceBusNamespace": "sql-reference-test-ehns", "sharedAccessPolicyKey": "primarykey=", "sharedAccessPolicyName": "RootManageSharedAccessKey" } }' --serialization '{"type":"Json","properties":{"format":"LineSeparated","encoding":"UTF8"}}'
@@ -192,9 +192,11 @@ az stream-analytics output create --job-name sql-reference-test-asa --resource-g
 
 *Note*: Fill in event hub namespace secrets.
 
-## Testing
+## Testing the telemetry message flow end-to-end using a basic Stream Analytics query
 
-### Test the two inputs and one output
+### Test if the two inputs and one output are configured correctly
+
+The Azure portal offers the ability to test input and output connectivity.
 
 In the Azure portal, press the 'test' button per input and output to see it the setup is connect. 
 
@@ -222,7 +224,7 @@ Navigate to the Overview page.
 
 Start the job (starting ingesting messages 'now' is fine). 
 
-See it starts succesfully, the state changes to 'Running'.
+See it starts successfully, and the state changes to 'Running'.
 
 ### Add an environment variable for the device connection string
 
@@ -285,7 +287,7 @@ Navigate in the Azure portal to the stream analytics job.
 
 Stop the job. 
 
-See it stops succesfully, the state changes to 'Stopped'.
+See it stops successfully, and the state changes to 'Stopped'.
 
 Navigate to the Query page.
 
@@ -305,7 +307,7 @@ Navigate to the Overview page.
 
 Start the job (starting ingesting messages 'now' is fine). 
 
-See it starts succesfully, the state changes to 'Running'.
+See it starts successfully, and the state changes to 'Running'.
 
 ### Send telemetry messages to simulate alerts being raised
 
@@ -457,11 +459,7 @@ Navigate in the Azure portal to the stream analytics job.
 
 Stop the job. 
 
-See it stops succesfully, the state changes to 'Stopped'.
-
-## Conclusion
-
-This flow demonstrates the power of using Azure Stream Analytics for alerts in a proper way, only on flanks and repeated when needed. 
+See it stops successfully, the state changes to 'Stopped'.
 
 ## Clean up resources
 
@@ -484,3 +482,8 @@ This results in more storage consumption over time than needed. Please check the
 The CLI does not seems to understand the 'StandardV2' tier of a Stream Analytics job.
 
 We see a lot of connection strings here to tie Azure resources together. In production, please try to use managed identities as much as possible.
+
+## Conclusion
+
+This flow demonstrates the power of using Azure Stream Analytics for alerts in a proper way, only on flanks and repeated when needed. 
+
