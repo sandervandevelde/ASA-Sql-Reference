@@ -157,7 +157,7 @@ az eventhubs eventhub create --name alerteh --resource-group sql-reference-test-
 ### Create a new stream analytics job
 
 ```
-az stream-analytics job create --job-name sql-reference-test-asa --resource-group sql-reference-test-rg --location westeurope --compatibility-level "1.2" --data-locale "en-US" --content-storage-policy JobStorageAccount --job-storage-account authentication-mode=connectionstring account-name=sqlreferenceteststor account-key=key== --transformation name="basictransformation" streaming-units=1 query="Select * into eventhuboutput from iothubinput" --output-error-policy "Drop" --out-of-order-policy "Adjust" --order-max-delay 5 --arrival-max-delay 16
+az stream-analytics job create --job-name sql-reference-test-asa --resource-group sql-reference-test-rg --location westeurope --compatibility-level "1.2" --data-locale "en-US" --content-storage-policy JobStorageAccount --job-storage-account authentication-mode=connectionstring account-name=sqlreferenceteststor account-key=key== --transformation name="basictransformation" streaming-units=1 query="SELECT * INTO eventhuboutput FROM iothubinput" --output-error-policy "Drop" --out-of-order-policy "Adjust" --order-max-delay 5 --arrival-max-delay 16
 ```
 
 *Note*: Fill in storage account connection string secrets.
@@ -194,21 +194,27 @@ az stream-analytics output create --job-name sql-reference-test-asa --resource-g
 
 ## Testing the telemetry message flow end-to-end using a basic Stream Analytics query
 
+Before we dive into the actual alert query, we first test the current device client -> IoT hub -> Stream Analytics -> Event hub flow.
+
 ### Test if the two inputs and one output are configured correctly
 
 The Azure portal offers the ability to test input and output connectivity.
 
-In the Azure portal, press the 'test' button per input and output to see if the setup is connected. 
+In the Azure portal, first navigate to either the Stream Analytics input or output page. Then switch.
 
-This will result in a green checkmark if the setup is correct for an input or output.
+Press the 'test' button per input and output to see if the setup is connected. 
+
+This will result in a green checkmark if the setup is correct per input and/or output.
 
 Both inputs and the output should be able to connect. 
 
 ### Start the Stream Analytics job
 
-At this moment a sample job query is added to test the flow from an IoT hub to an Event hub with the stream analytics job in between. The reference data is not taken into account yet...
+Currently, a sample job query is added to test the flow from an IoT hub to an Event hub with the stream analytics job in between. 
 
-We will add the actual query in the last steps.
+*Note*: The reference data is not taken into account yet.
+
+*Note*: We will add the actual query with the alert logic in the last steps of this flow.
 
 Navigate in the Azure portal to the stream analytics job.
 
@@ -217,7 +223,7 @@ Navigate to the Query page.
 You see the current test job ASQL:
 
 ```
-Select * into eventhuboutput from iothubinput
+SELECT * INTO eventhuboutput FROM iothubinput
 ```
 
 Navigate to the Overview page.
@@ -230,20 +236,20 @@ See it starts successfully, and the state changes to 'Running'.
 
 We are going to send a device telemetry message using the test application seen in the folder 'deviceclient'.
 
-This application needs the device connection string tom create a secure connection.
+This application needs the device connection string to create a secure connection (to prevent checking in the connection string into version control).
 
 Please add the following environment variable on your development machine:
 
 * key: ASADEVICECLIENT
 * value: HostName=sql-reference-test-ih.azure-devices.net;DeviceId=testdevice;SharedAccessKey=KEY=
 
-*Note*: Start the development tool only after this variable is added so it is read by the tooling.
+*Note*: Start the development tool (Visual Studio) only after this variable is added so it is read by the tooling.
 
 ### Send a telemetry message
 
 To send a device telemetry message, start the test C# device client application seen in the folder 'deviceclient' in Visual Studio.
 
-Run it.
+Run it unchanged.
 
 See that the connection string is read.
 
@@ -253,9 +259,9 @@ See that the message is sent.
 
 ### See how the telemetry message arrives in the Event hub
 
-We test if the default message sent by a device is arring in the Event hub. 
+We test if the default message sent by a device is arriving in the Event hub. 
 
-*Note*: you need to have a 'Standard' tier Event hub namespace when you need more than one consumer group per Event hub. 
+*Note*: you need to have a 'Standard' tier Event hub namespace when you need more than one consumer group per Event hub. This is especially true when you add logic consuming the alert arriving in the Event hub.
 
 Navigate in the Azure portal to the Event hub namespace.
 
@@ -265,7 +271,7 @@ Select the page 'Process data'.
 
 Start the option 'Enable real time insights from events'.
 
-*Note*: You get a message this viewer create an extra key and consumer group on the Event hub.
+*Note*: You get a message that this viewer tool creates an extra key and consumer group on the Event hub.
 
 You should see the telemetry message arrived, by now. Refresh the table using the 'refresh' button if needed.
 
@@ -273,15 +279,17 @@ Send a second telemetry message using the tooling.
 
 This second message will arrive too.
 
-*Note*: the Event hub now contains two message which are not directly removed from this page. These JSON format differs from the actual alert messages. Mixing these messages will lead additional caused by the two message formats. This is not a problem. You can switch to the 'raw' visualization to overcome this table behavior.
+*Note*: the Event hub now contains two messages which are not directly removed from this page. This JSON format differs from the actual alert messages. Mixing these messages will lead to additional columns caused by combining the two message formats. This is not a problem. You can switch to the 'raw' visualization to overcome this table behavior.
 
- ## Load the stream analytics job query
+ ## Load the stream analytics job query having alert logic
 
-We want to update and test the Azure Stream Analytics query with the actual alert job query, taking the reference data into account.
+We now update and test the Azure Stream Analytics query with the actual alert job query, taking the reference data into account.
 
 The new job query is made available in the 'asa extended reference data' folder.
 
 ### Stop the stream analytics job
+
+Before we can alter the query, we need to stop the query.
 
 Navigate in the Azure portal to the stream analytics job.
 
@@ -291,17 +299,17 @@ See it stops successfully, and the state changes to 'Stopped'.
 
 Navigate to the Query page.
 
-You see the current test job ASQL:
+You see the current test job ASQL query:
 
 ```
-Select * into eventhuboutput from iothubinput
+SELECT * INTO eventhuboutput FROM iothubinput
 ```
 
-replace the job ASQL with the content of the file 'ASA-Sql-Reference script.asaql'.
+Replace the job ASQL with the content of the file 'ASA-Sql-Reference script.asaql'.
 
-Save the query using 'Save query' button.
+Save the query using the 'Save query' button.
 
-Notice you get a green checkbox with the message 'Job ready to start'.
+Notice you get a green checkmark with the message 'Job ready to start'.
 
 Navigate to the Overview page.
 
@@ -323,11 +331,11 @@ Run it.
 
 See that the message is sent with the new value 901.
 
-Now run it a few time more, repeat the same message multiple times.
+Now run it a few times more, and repeat the same message multiple times.
 
 ### Check the alerts being raised in the Event hub
 
-The expectation we will only see a limit number of messages. Perhaps the message is escalated one or twice but we do not get the same message for the same client more than once, even if we send a message dozens of times.
+The expectation is that we will only see less alerts than messages sent. Perhaps a message is escalated once or twice but we do not get the same message for the same client more than once, even if we send a message dozens of times.
 
 Navigate in the Azure portal to the Event hub namespace.
 
@@ -339,10 +347,12 @@ Start the option 'Enable real time insights from events'.
 
 Refresh the table using the 'refresh' button if needed.
 
-You should see the arrival of al least two alert messages:
+You should see the arrival of at least two alert messages.
 
-* Each message is bound for a certain client (see the email address) and showing the state of the alert: pressureAlertRaised, pressureAlertEscalated, pressureAlertEscalatedTwice.
-* Each alert state is represented by two messages, due to the two email address subscribed to this device.
+This is the situation:
+
+* Each message is bound for a certain client (see the email address) and shows the state of the alert: pressureAlertRaised, pressureAlertEscalated, pressureAlertEscalatedTwice.
+* Each alert state is represented by two messages, due to the two email addresses subscribed to this device.
 
 Notice the number of alerts is just a subset of the number of messages being sent.
 
@@ -358,7 +368,7 @@ Run it.
 
 See that the message is sent with the new value 1002.
 
-Now run it a few time more, repeat the same message (without an alert situation) multiple times.
+Now run it a few times more, and repeat the same message (without an alert situation) multiple times.
 
 ### Check the alerts being cleared in the Event hub
 
@@ -374,30 +384,34 @@ Refresh the table using the 'refresh' button if needed.
 
 You should see the arrival of two messages of the alert being cleared. Both messages represent an email to a client requesting an alert.
 
-Notice no more messages are being sent, dispite the number of device messages (without an error situation).
+Notice no more messages are being sent, despite the number of device messages (without an error situation).
 
 ## Change the reference data so device registration changes are picked up
 
+Let's update the SQL database table and see how the email selection changes automatically.
+
 ### Change the content of the reference data table
 
-Keep the Stream Analytics job running!
+*Keep the Stream Analytics job running!*
 
 In the Azure portal, navigate to the 'referencedb' resource.
 
-navigate to the 'Query editor (preview)' tab in the 'referencedb' resource.
+Navigate to the 'Query editor (preview)' tab in the 'referencedb' resource.
 
-Login using the name and password seen above.
+Log in using the SQL database name and password seen above.
 
 Check the file 'SQL script.sql' in the folder '02 sqlserver' for the additional registration changes.
 
-Execute only step 2/2:
+Execute only step 2/2.
 
-- Add 1 row
-- Remove 1 row
-- Run the test query returning only 4 rows 
+This shows for device 'sensor-001':
+
+- Adds 1 row
+- Removes 1 row
+- Runs the test query returning only 4 rows 
 - Notice only clients D and E are interested in 'sensor-001' alerts 
 
-Wait for a minute so the change is picked up.
+Wait a minute so the change is picked up.
 
 ### Send telemetry messages to simulate alerts being raised
 
