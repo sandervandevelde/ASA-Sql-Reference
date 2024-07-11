@@ -160,7 +160,7 @@ az stream-analytics job create --job-name sql-reference-test-asa --resource-grou
 
 *Note*: Fill in storage account connectionstring secrets.
 
-*Note*: this will create a 'Standard' SKU, not the new 'StandardV2'
+*Note*: This CLI command will create a 'Standard' SKU, not the new 'StandardV2'. If needed, this upgrade from 'Standard' to 'StandardV2' is advertised in the Azure portal overview page of the stream analytics job.
 
 ### Create an 'iothubinput' 
 
@@ -447,7 +447,27 @@ Refresh the table using the 'refresh' button if needed.
 
 You should see the arrival of two messages of the alert being cleared. Both messages represent an email sent to the latest registered clients.
 
+### Stop the stream analytics job
+
+Navigate in the Azure portal to the stream analytics job.
+
+Stop the job. 
+
+See it stops succesfully, the state changes to 'Stopped'.
+
 ## Conclusion
 
 This flow demonstrates the power of using Azure Stream Analytics for alerts in a proper way, only on flanks and repeated when needed. 
+
+## Clean up resources
+
+Keeping resources running can lead to Azure credits consumption.
+
+Check the following resources:
+
+* IoT Hub (Free or Standard tier)
+* Storage account
+* EventHub (Basic or Standard tier)
+* Stream Analytics job (Standard or StandardV2 tier)
+* Sql Server and database (Free or paid tier)
 
