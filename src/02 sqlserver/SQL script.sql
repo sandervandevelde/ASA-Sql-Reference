@@ -42,6 +42,7 @@ select DeviceId, ClientId, EmailAddress, IsEnabled from dbo.DeviceAlerts where I
 INSERT INTO DeviceAlerts (DeviceId, ClientId, EmailAddress, IsEnabled)
 VALUES ('sensor-001', 'ClientE', 'C.E@company.com', 1);
 
-delete from dbo.DeviceAlerts where (DeviceId = 'sensor-001') and (EmailAddress = 'C.A@company.com')
+DELETE FROM dbo.DeviceAlerts 
+WHERE (DeviceId = 'sensor-001') AND (EmailAddress = 'C.A@company.com');
 
-
+select DeviceId, ClientId, EmailAddress, IsEnabled from dbo.DeviceAlerts where IsEnabled = 1 

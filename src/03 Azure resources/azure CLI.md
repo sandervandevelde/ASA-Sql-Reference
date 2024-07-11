@@ -109,17 +109,20 @@ az sql db create --resource-group sql-reference-test-rg --server sql-reference-t
 
 ### Create the table and load the sample records
 
-In the Azure portal, navigate to the 'Query editor (preview)' tab in the 'referencedb' resource.
+In the Azure portal, navigate to the 'referencedb' resource.
+
+navigate to the 'Query editor (preview)' tab in the 'referencedb' resource.
 
 Login using the name and password seen above.
 
-Check the file 'script.sql' in the folder '02 sqlserver' for the first commands and inserts.
+Check the file 'SQL script.sql' in the folder '02 sqlserver' for the first commands and inserts.
 
 Execute only step 1/2:
 
 - Create the table
 - Add 7 rows
-- Run the test query returning only 4 rows
+- Run the test query returning only 4 rows 
+- Notice only clients A and D are interested in 'sensor-001' alerts 
 
 ## Create an eventhub namespace with eventhub
 
@@ -288,7 +291,7 @@ You see the current test job ASQL:
 Select * into eventhuboutput from iothubinput
 ```
 
-replace the job ASQL with the content of the file 'ASA-Sql-Reference.asaql'.
+replace the job ASQL with the content of the file 'ASA-Sql-Reference script.asaql'.
 
 Save the query using 'Save query' button.
 
@@ -368,6 +371,23 @@ You should see the arrival of two messages of the alert being cleared. Both mess
 Notice no more messages are being sent, dispite the number of device messages (without an error situation).
 
 ## Change the reference data so device registration changes are picked up
+
+Keep the Stream Analytics job running!
+
+In the Azure portal, navigate to the 'referencedb' resource.
+
+navigate to the 'Query editor (preview)' tab in the 'referencedb' resource.
+
+Login using the name and password seen above.
+
+Check the file 'SQL script.sql' in the folder '02 sqlserver' for the additional registration changes.
+
+Execute only step 2/2:
+
+- Add 1 row
+- Remove 1 row
+- Run the test query returning only 4 rows 
+- Notice only clients D and E are interested in 'sensor-001' alerts 
 
 
 
