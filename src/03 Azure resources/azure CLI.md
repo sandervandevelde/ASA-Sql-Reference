@@ -198,13 +198,13 @@ az stream-analytics output create --job-name sql-reference-test-asa --resource-g
 
 The Azure portal offers the ability to test input and output connectivity.
 
-In the Azure portal, press the 'test' button per input and output to see it the setup is connect. 
+In the Azure portal, press the 'test' button per input and output to see if the setup is connected. 
 
-This will result in a green checkmark is the setup is correct for an input or output.
+This will result in a green checkmark if the setup is correct for an input or output.
 
-Both inputs and the output chould be able to connect. 
+Both inputs and the output should be able to connect. 
 
-### Start the Stream analytics job
+### Start the Stream Analytics job
 
 At this moment a sample job query is added to test the flow from an IoT hub to event hub with the stream analytics job in between. The reference data is not taken into account yet...
 
@@ -485,5 +485,5 @@ We see a lot of connection strings here to tie Azure resources together. In prod
 
 ## Conclusion
 
-This flow demonstrates the power of using Azure Stream Analytics for alerts in a proper way, only on flanks and repeated when needed. 
+This flow demonstrates the power of using Azure Stream Analytics for alerts in a proper way, only on flanks, and repeated when needed. 
 
