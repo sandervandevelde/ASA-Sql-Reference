@@ -6,6 +6,6 @@ This repo shows how Sql Server data can ve used as reference data.
 
 The demonstrated Azure Stream Analytics alerting mechanism is inspired by https://blog.sivamuthukumar.com/azure-stream-analytics-alerts-on-iot-telemetry.
 
-## Contrubtions
+## Contributions
 
 If you want to support by offering a pull request, prease proceed. Thanks!

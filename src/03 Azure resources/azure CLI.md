@@ -471,3 +471,12 @@ Check the following resources:
 * Stream Analytics job (Standard or StandardV2 tier)
 * Sql Server and database (Free or paid tier)
 
+## Points of attention
+
+We do not make use of the deltaSnapshotQuery when working with reference data. We create a new reference table every time the timer is triggered. These are then stored in a container in the storage account.
+
+This results in more storage consumption over time than needed. Please check the delta snapshot option or keep removing unneeded old reference data.
+
+The CLI does not seems to understand the 'StandardV2' tier of a Stream Analytics job.
+
+The alert escalation should be more spread out over time. Escalation is now done in minutes.
