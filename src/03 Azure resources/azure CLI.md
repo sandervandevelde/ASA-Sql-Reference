@@ -321,7 +321,7 @@ Now run it a few time more, repeat the same message multiple times.
 
 ### Check the alerts being raised in the eventhub
 
-The expectation we will only see a limit number of messages. Perhaps the message is escalated one or twice but we do not get the same message for the same customer more than once, even if we send a message dozens of times.
+The expectation we will only see a limit number of messages. Perhaps the message is escalated one or twice but we do not get the same message for the same client more than once, even if we send a message dozens of times.
 
 Navigate in the Azure portal to the eventhub namespace.
 
@@ -331,11 +331,11 @@ Select the page 'Process data'.
 
 Start the option 'Enable real time insights from events'.
 
- Refresh the table using the 'refresh' button if needed.
+Refresh the table using the 'refresh' button if needed.
 
 You should see the arrival of al least two alert messages:
 
-* Each message is bound for a certain customer (see the email addres) and showing the state of the alert: pressureAlertRaised, pressureAlertEscalated, pressureAlertEscalatedTwice.
+* Each message is bound for a certain client (see the email address) and showing the state of the alert: pressureAlertRaised, pressureAlertEscalated, pressureAlertEscalatedTwice.
 * Each alert state is represented by two messages, due to the two email address subscribed to this device.
 
 Notice the number of alerts is just a subset of the number of messages being sent.
@@ -364,13 +364,15 @@ Select the page 'Process data'.
 
 Start the option 'Enable real time insights from events'.
 
- Refresh the table using the 'refresh' button if needed.
+Refresh the table using the 'refresh' button if needed.
 
-You should see the arrival of two messages of the alert being cleared. Both messages represent an email to a customer requesting an alert.
+You should see the arrival of two messages of the alert being cleared. Both messages represent an email to a client requesting an alert.
 
 Notice no more messages are being sent, dispite the number of device messages (without an error situation).
 
 ## Change the reference data so device registration changes are picked up
+
+### Change the content of the reference data table
 
 Keep the Stream Analytics job running!
 
@@ -389,8 +391,63 @@ Execute only step 2/2:
 - Run the test query returning only 4 rows 
 - Notice only clients D and E are interested in 'sensor-001' alerts 
 
+Wait for a minute so the change is picked up.
 
+### Send telemetry messages to simulate alerts being raised
 
+Open the test C# device client application seen in the folder 'deviceclient' in Visual Studio.
 
+Undo the change in the code regarding the 'MessageBody':
 
+* Change the pressure value from 1002 to 903. 
+
+Run it.
+
+See that the message is sent with the new value 903.
+
+### Check the alerts being cleared in the eventhub
+
+Navigate in the Azure portal to the eventhub namespace.
+
+Navigate to the eventhub 'alerteh'.
+
+Select the page 'Process data'.
+
+Start the option 'Enable real time insights from events'.
+
+Refresh the table using the 'refresh' button if needed.
+
+You should see the arrival of two messages of the alert being raised. Both messages represent an email to a client requesting an alert.
+
+Notice that the name of one of these clients has changed according to the reference data. 
+
+### Send telemetry messages to simulate alerts being cleared
+
+Open the test C# device client application seen in the folder 'deviceclient' in Visual Studio.
+
+Undo the change in the code regarding the 'MessageBody':
+
+* Change the pressure value from 903 to 1003. 
+
+Run it.
+
+See that the message is sent with the new value 1003.
+
+### Check the alerts being cleared in the eventhub
+
+Navigate in the Azure portal to the eventhub namespace.
+
+Navigate to the eventhub 'alerteh'.
+
+Select the page 'Process data'.
+
+Start the option 'Enable real time insights from events'.
+
+Refresh the table using the 'refresh' button if needed.
+
+You should see the arrival of two messages of the alert being cleared. Both messages represent an email sent to the latest registered clients.
+
+## Conclusion
+
+This flow demonstrates the power of using Azure Stream Analytics for alerts in a proper way, only on flanks and repeated when needed. 
 
