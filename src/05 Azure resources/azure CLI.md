@@ -181,6 +181,8 @@ az stream-analytics output create --job-name sql-reference-test-asa --resource-g
 
 *Note*: Fill in event hub namespace secrets.
 
+## Testing
+
 ### Test the two inputs and one output
 
 In the Azure portal, press the 'test' button per input and output to see it the setup is connect. 
@@ -189,5 +191,21 @@ This will result in a green checkmark is the setup is correct for an input or ou
 
 Both inputs and the output chould be able to connect. 
 
- ## load the stream analytics job query
+### Put on the Stream analytics job
+
+At this moment a sample job query is added to test the flow from iot hub to event hub with the stream analytics job in between.
+
+We will add the actual query in the last steps.
+
+Please startthe job and see it starts succesfully.
+
+### Send a telemetry message
+
+
+
+### See how the telemetry message arrives in the event hub
+
+
+
+ ## Load the stream analytics job query
 
