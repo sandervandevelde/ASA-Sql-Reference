@@ -9,9 +9,6 @@ CREATE TABLE DeviceAlerts (
 )
 
 
-select * from dbo.DeviceAlerts
-
-
 INSERT INTO DeviceAlerts (DeviceId, ClientId, EmailAddress, IsEnabled)
 VALUES ('sensor-001', 'ClientA', 'C.A@company.com', 1);
 
