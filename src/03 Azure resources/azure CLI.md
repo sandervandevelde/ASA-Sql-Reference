@@ -139,7 +139,7 @@ This creates a 'Standard' tier Event hub namespace.
 ### Get the RootManageSharedAccessKey of the Event hub namespace
 
 ```
-az eventhubs namespace authorization-rule keys list --resource-group sql-reference-test-rg --namespace-name sql-reference-test-ehns --authorization-rule-name  RootManageSharedAccessKey
+az eventhubs namespace authorization-rule keys list --resource-group sql-reference-test-rg --namespace-name sql-reference-test-ehns --authorization-rule-name RootManageSharedAccessKey
 ```
 
 *Note*: This Event hub namespace key is needed by the stream analytics job Event hub output to connect.
