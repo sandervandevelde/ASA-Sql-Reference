@@ -93,6 +93,8 @@ This second message will arrive too.
 
 *Note*: the Event hub now contains two messages which are not directly removed from this page. This JSON format differs from the actual alert messages. Mixing these messages will lead to additional columns caused by combining the two message formats. This is not a problem. You can switch to the 'raw' visualization to overcome this table behavior.
 
+Note: By changing the Event Hub retention time to just one hour (check the configuration page) you can have older messages automatically removed from the Event Hub internal queue.
+
  ## Load the stream analytics job query having alert logic
 
 We now update and test the Azure Stream Analytics query with the actual alert job query, taking the reference data into account.
@@ -281,6 +283,10 @@ You should see the arrival of two messages of the alert being cleared. Both mess
 
 ### Stop the stream analytics job
 
+We are ready with our tests regarding the new alerting flow. 
+
+Once you are ready, it's recommended to stop the job to save Azure credits.
+
 Navigate in the Azure portal to the stream analytics job.
 
 Stop the job. 
@@ -289,7 +295,7 @@ See it stops successfully, the state changes to 'Stopped'.
 
 ## Clean up resources
 
-Keeping resources running can lead to Azure credits consumption.
+Keeping resources running can lead to extra Azure credits consumption.
 
 Check the following resources:
 
@@ -301,11 +307,11 @@ Check the following resources:
 
 ## Points of attention
 
-We do not make use of the deltaSnapshotQuery when working with reference data. We create a new reference table every time the timer is triggered. These are then stored in a container in the storage account.
+We do not make use of the deltaSnapshotQuery when working with reference data. So, the job creates a new reference table every time the timer is triggered. These are then stored in a container in the storage account.
 
 This results in more storage consumption over time than needed. Please check the delta snapshot option or keep removing unneeded old reference data.
 
-The CLI does not seems to understand the 'StandardV2' tier of a Stream Analytics job.
+The CLI does not seem to understand the 'StandardV2' tier of a Stream Analytics job. This can be fixed by hand.
 
 We see a lot of connection strings here to tie Azure resources together. In production, please try to use managed identities as much as possible.
 
