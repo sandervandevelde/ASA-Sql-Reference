@@ -10,10 +10,15 @@ A complete [guide](https://github.com/sandervandevelde/ASA-Sql-Reference/blob/ma
 
 Check the full demonstration in this [blog post](https://sandervandevelde.wordpress.com/2024/07/12/reference-data-in-azure-stream-analytics-using-azure-sql/), complete with screen dumps.
 
-## Credits
+## License
 
-The demonstrated Azure Stream Analytics alerting mechanism is inspired by https://blog.sivamuthukumar.com/azure-stream-analytics-alerts-on-iot-telemetry.
+This repository and all its content are made available under the MIT license.
 
 ## Contributions
 
 If you want to support us by offering a pull request, please proceed! Thanks.
+
+## Credits
+
+The demonstrated Azure Stream Analytics alerting mechanism is inspired by https://blog.sivamuthukumar.com/azure-stream-analytics-alerts-on-iot-telemetry.
+
