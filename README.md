@@ -4,7 +4,7 @@ This repo shows how SQL Server data can be used as reference data.
 
 ## Walk-through
 
-A complete [guide](./testing the flow.md) is offered including creating all Azure resources via Azure CLI, a Stream Analytics test project to learn about the way to check for alerts, and a series of tests to check for alerts in Stream Analytics combined with SQL Server reference data.
+A complete [guide](.\testing the flow.md) is offered including creating all Azure resources via Azure CLI, a Stream Analytics test project to learn about the way to check for alerts, and a series of tests to check for alerts in Stream Analytics combined with SQL Server reference data.
 
 ## Blog post
 
